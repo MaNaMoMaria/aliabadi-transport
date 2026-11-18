@@ -1,6 +1,6 @@
-// --- 1. Three.js 3D Truck Demo ---
-let scene, camera, renderer, truckGroup, headlights = [];
+let scene, camera, renderer, loadedTruck;
 let lightsOn = false;
+let spotLightLeft, spotLightRight, glowLeft, glowRight, ambientLight;
 
 function init3D() {
     const container = document.getElementById('webgl-container');
@@ -8,98 +8,89 @@ function init3D() {
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(6, 3, 6);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(4.5, 2.2, 5.5);
+    camera.lookAt(0, 0.5, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    // Studio & Environment Lighting
+    ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(10, 20, 15);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    dirLight.position.set(8, 15, 10);
     scene.add(dirLight);
 
-    // Build Stylized Semi-Truck Model
-    truckGroup = new THREE.Group();
+    const backLight = new THREE.DirectionalLight(0x3b82f6, 1.2);
+    backLight.position.set(-8, 5, -10);
+    scene.add(backLight);
 
-    // Cabin
-    const cabinGeo = new THREE.BoxGeometry(2, 1.5, 2.5);
-    const cabinMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3, metalness: 0.8 });
-    const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-    cabin.position.set(0, 1.2, 0);
-    truckGroup.add(cabin);
-
-    // Hood / Front
-    const hoodGeo = new THREE.BoxGeometry(2, 1.1, 1.8);
-    const hoodMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.3, metalness: 0.8 });
-    const hood = new THREE.Mesh(hoodGeo, hoodMat);
-    hood.position.set(0, 0.95, 1.7);
-    truckGroup.add(hood);
-
-    // Windshield & Glass
-    const glassGeo = new THREE.BoxGeometry(1.9, 0.9, 0.1);
-    const glassMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.1, transparent: true, opacity: 0.7 });
-    const glass = new THREE.Mesh(glassGeo, glassMat);
-    glass.position.set(0, 1.6, 1.25);
-    glass.rotation.x = -0.2;
-    truckGroup.add(glass);
-
-    // Wheels
-    const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 32);
-    wheelGeo.rotateZ(Math.PI / 2);
-    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.9 });
-
-    const wheelPositions = [
-        [-1.1, 0.4, 1.8], [1.1, 0.4, 1.8],
-        [-1.1, 0.4, -1.2], [1.1, 0.4, -1.2],
-        [-1.1, 0.4, -2.4], [1.1, 0.4, -2.4]
-    ];
-
-    wheelPositions.forEach(pos => {
-        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-        wheel.position.set(...pos);
-        truckGroup.add(wheel);
+    // Ground Plane
+    const groundGeo = new THREE.PlaneGeometry(30, 30);
+    const groundMat = new THREE.MeshStandardMaterial({ 
+        color: 0x0b0f19, 
+        roughness: 0.4, 
+        metalness: 0.6,
+        transparent: true,
+        opacity: 0.6
     });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.8;
+    scene.add(ground);
 
-    // Headlights (Spotlights or Glowing Meshes)
-    const lightGeo = new THREE.SphereGeometry(0.15, 16, 16);
-    const lightMatOff = new THREE.MeshStandardMaterial({ color: 0x6b7280 });
-    const lightMatOn = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+    // Load truck.glb model
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+        'truck.glb',
+        function (gltf) {
+            loadedTruck = gltf.scene;
 
-    const hl1 = new THREE.Mesh(lightGeo, lightMatOff);
-    hl1.position.set(-0.8, 0.8, 2.6);
-    truckGroup.add(hl1);
-    headlights.push(hl1);
+            // Auto-Center and Auto-Scale
+            const box = new THREE.Box3().setFromObject(loadedTruck);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 4.2 / maxDim;
 
-    const hl2 = new THREE.Mesh(lightGeo, lightMatOff);
-    hl2.position.set(0.8, 0.8, 2.6);
-    truckGroup.add(hl2);
-    headlights.push(hl2);
+            loadedTruck.scale.set(scale, scale, scale);
+            loadedTruck.position.x = -center.x * scale;
+            loadedTruck.position.y = -box.min.y * scale - 0.8;
+            loadedTruck.position.z = -center.z * scale;
 
-    scene.add(truckGroup);
+            scene.add(loadedTruck);
+            setupTruckHeadlights(size, scale);
+        },
+        undefined,
+        function (error) {
+            console.error('Error loading truck.glb:', error);
+        }
+    );
 
-    // Mouse Drag Rotation
+    // Mouse & Touch Rotation
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
 
-    container.addEventListener('mousedown', (e) => { isDragging = true; });
+    container.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
     container.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
+        if (!isDragging || !loadedTruck) return;
         const deltaX = e.clientX - previousMousePosition.x;
-        truckGroup.rotation.y += deltaX * 0.01;
+        loadedTruck.rotation.y += deltaX * 0.01;
         previousMousePosition = { x: e.clientX, y: e.clientY };
     });
     window.addEventListener('mouseup', () => { isDragging = false; });
+
     container.addEventListener('touchstart', (e) => { isDragging = true; previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
     container.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
+        if (!isDragging || !loadedTruck) return;
         const deltaX = e.touches[0].clientX - previousMousePosition.x;
-        truckGroup.rotation.y += deltaX * 0.01;
+        loadedTruck.rotation.y += deltaX * 0.01;
         previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     });
 
@@ -107,10 +98,52 @@ function init3D() {
     animate();
 }
 
+function setupTruckHeadlights(size, scale) {
+    const frontZ = (size.z * scale) / 2;
+    const widthX = (size.x * scale) * 0.32;
+    const heightY = -0.25;
+
+    const glowGeo = new THREE.SphereGeometry(0.12, 16, 16);
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0xfffbeb, transparent: true, opacity: 0 });
+
+    glowLeft = new THREE.Mesh(glowGeo, glowMat.clone());
+    scene.add(glowLeft);
+
+    glowRight = new THREE.Mesh(glowGeo, glowMat.clone());
+    scene.add(glowRight);
+
+    spotLightLeft = new THREE.SpotLight(0xffeaa7, 0, 15, Math.PI / 5, 0.5, 1);
+    scene.add(spotLightLeft);
+    scene.add(spotLightLeft.target);
+
+    spotLightRight = new THREE.SpotLight(0xffeaa7, 0, 15, Math.PI / 5, 0.5, 1);
+    scene.add(spotLightRight);
+    scene.add(spotLightRight.target);
+}
+
 function animate() {
     requestAnimationFrame(animate);
-    // Slow idle rotation if not dragging
-    truckGroup.rotation.y += 0.003;
+    if (loadedTruck) {
+        loadedTruck.rotation.y += 0.002;
+        
+        if (spotLightLeft && glowLeft) {
+            const angle = loadedTruck.rotation.y;
+            const radius = 2.0;
+            const offsetX = 0.65;
+
+            const lx = Math.sin(angle) * radius - Math.cos(angle) * offsetX;
+            const lz = Math.cos(angle) * radius + Math.sin(angle) * offsetX;
+            glowLeft.position.set(lx, -0.25, lz);
+            spotLightLeft.position.set(lx, -0.25, lz);
+            spotLightLeft.target.position.set(lx + Math.sin(angle) * 5, -0.8, lz + Math.cos(angle) * 5);
+
+            const rx = Math.sin(angle) * radius + Math.cos(angle) * offsetX;
+            const rz = Math.cos(angle) * radius - Math.sin(angle) * offsetX;
+            glowRight.position.set(rx, -0.25, rz);
+            spotLightRight.position.set(rx, -0.25, rz);
+            spotLightRight.target.position.set(rx + Math.sin(angle) * 5, -0.8, rz + Math.cos(angle) * 5);
+        }
+    }
     renderer.render(scene, camera);
 }
 
@@ -125,18 +158,37 @@ function onWindowResize() {
 // Toggle Headlights
 document.getElementById('toggle-lights-btn')?.addEventListener('click', () => {
     lightsOn = !lightsOn;
-    headlights.forEach(hl => {
-        hl.material = lightsOn ? new THREE.MeshBasicMaterial({ color: 0xfef08a }) : new THREE.MeshStandardMaterial({ color: 0x6b7280 });
-    });
+
+    if (ambientLight) ambientLight.intensity = lightsOn ? 0.55 : 1.4;
+    if (spotLightLeft && spotLightRight) {
+        spotLightLeft.intensity = lightsOn ? 6 : 0;
+        spotLightRight.intensity = lightsOn ? 6 : 0;
+    }
+    if (glowLeft && glowRight) {
+        glowLeft.material.opacity = lightsOn ? 0.95 : 0;
+        glowRight.material.opacity = lightsOn ? 0.95 : 0;
+    }
+
+    if (loadedTruck) {
+        loadedTruck.traverse((child) => {
+            if (child.isMesh && (child.name.toLowerCase().includes('light') || child.name.toLowerCase().includes('lamp'))) {
+                if (child.material) {
+                    child.material.emissive = lightsOn ? new THREE.Color(0xffeaa7) : new THREE.Color(0x000000);
+                    child.material.emissiveIntensity = lightsOn ? 3 : 0;
+                }
+            }
+        });
+    }
+
     const btnSpan = document.querySelector('#toggle-lights-btn span');
     if (btnSpan) {
-        btnSpan.setAttribute('data-i18n', lightsOn ? 'btn_lights_off' : 'btn_lights');
-        btnSpan.textContent = lightsOn ? (currentLang === 'fa' ? 'خاموش کردن چراغ‌ها' : 'Turn Off Lights') : (currentLang === 'fa' ? 'روشن کردن چراغ‌ها' : 'Turn On Lights');
+        btnSpan.textContent = lightsOn 
+            ? (currentLang === 'fa' ? 'خاموش کردن چراغ‌ها' : 'Turn Off Lights') 
+            : (currentLang === 'fa' ? 'روشن کردن چراغ‌ها' : 'Turn On Lights');
     }
 });
 
-
-// --- 2. Multi-language & Theme Switcher ---
+// Localization & Theme
 const translations = {
     fa: {
         meta_title: "گروه ترابری و لجستیک علی‌آبادی | کنگان",
@@ -151,7 +203,6 @@ const translations = {
         btn_contract: "استعلام قرارداد سازمانی",
         btn_trucks: "مشاهده کشنده‌ها",
         btn_lights: "روشن کردن چراغ‌ها",
-        btn_lights_off: "خاموش کردن چراغ‌ها",
         canvas_hint: "برای چرخش مدل، با موس بکشید",
         serv_title: "بخش اول: لجستیک و ترابری شرکتی (پیمانکاری)",
         serv_subtitle: "ارائه خدمات تخصصی حمل‌ونقل پرسنل و کارمندان با قراردادهای رسمی با پالایشگاه‌ها و پتروشیمی‌ها",
@@ -182,7 +233,6 @@ const translations = {
         btn_contract: "Inquire Corporate Contract",
         btn_trucks: "View Trucks",
         btn_lights: "Turn On Lights",
-        btn_lights_off: "Turn Off Lights",
         canvas_hint: "Drag to rotate the 3D model",
         serv_title: "Part 1: Corporate Personnel Transport & Contracting",
         serv_subtitle: "Providing specialized staff transportation services with official contracts for refineries & petrochemicals",
@@ -205,14 +255,13 @@ const translations = {
 let currentLang = 'fa';
 
 const langToggleBtn = document.getElementById('lang-toggle');
-langToggleBtn.addEventListener('click', () => {
+langToggleBtn?.addEventListener('click', () => {
     currentLang = currentLang === 'fa' ? 'en' : 'fa';
     langToggleBtn.textContent = currentLang === 'fa' ? 'EN' : 'FA';
     
     document.documentElement.setAttribute('lang', currentLang);
     document.documentElement.setAttribute('dir', currentLang === 'fa' ? 'rtl' : 'ltr');
 
-    // Update all text elements with data-i18n
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[currentLang][key]) {
@@ -221,18 +270,16 @@ langToggleBtn.addEventListener('click', () => {
     });
 });
 
-// Theme Switcher
 const themeToggleBtn = document.getElementById('theme-toggle');
 const htmlEl = document.documentElement;
 
-themeToggleBtn.addEventListener('click', () => {
+themeToggleBtn?.addEventListener('click', () => {
     const currentTheme = htmlEl.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     htmlEl.setAttribute('data-theme', newTheme);
     themeToggleBtn.innerHTML = newTheme === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
 });
 
-// Run 3D Init on Load
 window.addEventListener('DOMContentLoaded', () => {
     init3D();
 });
