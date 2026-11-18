@@ -1,129 +1,303 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark">
+<html lang="en" dir="ltr" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="meta_title">گروه ترابری و لجستیک علی‌آبادی | کنگان</title>
-    <!-- FontAwesome & Google Fonts -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
-    <!-- Three.js Library & GLTFLoader Addon -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLT Holding | Kian Logistics & Transport Holding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Model Viewer for interactive 3D truck.glb rendering -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 </head>
 <body>
 
-    <!-- Header / Navbar -->
-    <header class="navbar">
-        <div class="logo-container">
-            <i class="fa-solid fa-truck-front brand-icon"></i>
-            <span class="brand-name" data-i18n="brand_name">علی‌آبادی | کنگان</span>
-        </div>
-        <nav class="nav-links">
-            <a href="#services" data-i18n="nav_services">لجستیک پرسنلی</a>
-            <a href="#showroom" data-i18n="nav_showroom">نمایشگاه کامیون</a>
-            <a href="#3d-section" data-i18n="nav_3d">مدل سه‌بعدی</a>
-            <a href="#contact" data-i18n="nav_contact">تماس با ما</a>
-        </nav>
-        <div class="nav-controls">
-            <button id="lang-toggle" class="control-btn" title="تغییر زبان / Language">EN</button>
-            <button id="theme-toggle" class="control-btn" title="تغییر تم"><i class="fa-solid fa-moon"></i></button>
-        </div>
-    </header>
+  <!-- Initial Language Selection Splash Modal -->
+  <div id="lang-splash" class="splash-overlay" role="dialog" aria-modal="true" aria-labelledby="splash-title">
+    <div class="splash-card">
+      <div class="splash-logo-wrap">
+        <img src="Logo01.jpg" alt="KLT Holding Emblem" class="splash-logo" />
+      </div>
+      <h1 id="splash-title" class="splash-brand">KLT HOLDING</h1>
+      <p class="splash-sub">KIAN LOGISTICS &amp; TRANSPORT HOLDING</p>
+      <p class="splash-prompt">Select your preferred language / زبان مورد نظر را انتخاب کنید</p>
+      <div class="splash-actions">
+        <button type="button" class="btn-3d btn-3d-primary" data-select-lang="en">
+          <span>English</span>
+        </button>
+        <button type="button" class="btn-3d btn-3d-amber" data-select-lang="fa">
+          <span>فارسی</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
-    <!-- Hero Section with 3D Canvas -->
-    <section class="hero-section" id="3d-section">
-        <div class="hero-content">
-            <div class="badge" data-i18n="hero_badge">منطقه ویژه انرژی پارس (کنگان / عسلویه)</div>
-            <h1 data-i18n="hero_title">پیشران لجستیک نفت و گاز و بازار ماشین‌آلات سنگین</h1>
-            <p data-i18n="hero_desc">تأمین مطمئن ناوگان ترابری پرسنل شرکت‌های صنعتی و مرجع تخصصی خرید و فروش کشنده‌های کارکرده در جنوب کشور.</p>
-            <div class="cta-buttons">
-                <a href="#services" class="btn primary" data-i18n="btn_contract">استعلام قرارداد سازمانی</a>
-                <a href="#showroom" class="btn secondary" data-i18n="btn_trucks">مشاهده کشنده‌ها</a>
-            </div>
+  <!-- Sticky Glassmorphic Navigation Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#hero" class="brand-link">
+        <img src="Logo01.jpg" alt="KLT Logo" class="nav-logo" />
+        <div class="brand-text">
+          <span class="brand-title">KLT HOLDING</span>
+          <span class="brand-caption" data-i18n="brandSubtitle">Kian Logistics &amp; Transport</span>
+        </div>
+      </a>
+
+      <nav class="main-nav" aria-label="Primary Navigation">
+        <a href="#hero" data-i18n="navHome">Home</a>
+        <a href="#fleet-3d" data-i18n="navFleet">3D Fleet</a>
+        <a href="#divisions" data-i18n="navDivisions">Divisions</a>
+        <a href="#quote" data-i18n="navQuote">Freight Quote</a>
+        <a href="#contact" data-i18n="navContact">Hub &amp; Contact</a>
+      </nav>
+
+      <div class="header-controls">
+        <!-- Language Switcher Button -->
+        <button type="button" id="lang-toggle" class="btn-3d btn-3d-sm" aria-label="Switch Language">
+          <span id="lang-toggle-label">فارسی</span>
+        </button>
+
+        <!-- Dark / Light Theme Switcher Button -->
+        <button type="button" id="theme-toggle" class="btn-3d btn-3d-sm" aria-label="Toggle Color Theme">
+          <span id="theme-icon">&#9788;</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section with Bandar Kangan & Bushehr Coastal Backdrop -->
+    <section id="hero" class="hero-section">
+      <div class="hero-bg-wrap">
+        <img src="Photo_02.png" alt="KLT Heavy Transport Fleet at Bandar Kangan Coast" class="hero-bg-img" />
+        <div class="hero-overlay"></div>
+      </div>
+
+      <div class="container hero-content">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          <span data-i18n="heroBadge">BANDAR KANGAN &amp; BUSHEHR STRATEGIC CORRIDOR</span>
         </div>
 
-        <!-- 3D Interactive Container -->
-        <div class="canvas-container">
-            <div id="webgl-container"></div>
-            <div class="canvas-controls-overlay">
-                <button id="toggle-lights-btn" class="glow-btn">
-                    <i class="fa-solid fa-lightbulb"></i> <span data-i18n="btn_lights">روشن کردن چراغ‌ها</span>
-                </button>
-                <span class="hint-text" data-i18n="canvas_hint">برای چرخش مدل، با موس بکشید</span>
-            </div>
+        <h2 class="hero-title" data-i18n="heroTitle">
+          Precision Heavy Logistics Across the Persian Gulf &amp; Global Corridors
+        </h2>
+
+        <p class="hero-desc" data-i18n="heroDesc">
+          Kian Logistics &amp; Transport Holding delivers enterprise-grade freight forwarding, heavy machinery haulage, and integrated port-to-door supply chain infrastructure.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="#fleet-3d" class="btn-3d btn-3d-amber">
+            <span data-i18n="ctaExploreFleet">Inspect 3D Fleet</span>
+          </a>
+          <a href="#quote" class="btn-3d btn-3d-primary">
+            <span data-i18n="ctaGetQuote">Calculate Freight</span>
+          </a>
         </div>
+
+        <!-- Live Corridor Telemetry Bar -->
+        <div class="telemetry-strip">
+          <div class="telemetry-item">
+            <span class="telemetry-label" data-i18n="statHub">Primary Maritime Hub</span>
+            <span class="telemetry-val" data-i18n="statHubVal">Bandar Kangan, Bushehr</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label" data-i18n="statPayload">Max Heavy Payload</span>
+            <span class="telemetry-val" data-i18n="statPayloadVal">120+ Metric Tons</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label" data-i18n="statTracking">Satellite Dispatch</span>
+            <span class="telemetry-val" data-i18n="statTrackingVal">24/7 GPS &amp; Telemetry</span>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Core Services: Personnel Transport (B2B) -->
-    <section class="services-section" id="services">
+    <!-- Interactive 3D Fleet Showcase Using truck.glb & Studio Backdrop -->
+    <section id="fleet-3d" class="section-block">
+      <div class="container">
         <div class="section-header">
-            <h2 data-i18n="serv_title">بخش اول: لجستیک و ترابری شرکتی (پیمانکاری)</h2>
-            <p data-i18n="serv_subtitle">ارائه خدمات تخصصی حمل‌ونقل پرسنل و کارمندان با قراردادهای رسمی با پالایشگاه‌ها و پتروشیمی‌ها</p>
+          <span class="section-eyebrow" data-i18n="fleetEyebrow">VOLVO-GRADE ENGINEERING STANDARDS</span>
+          <h2 class="section-title" data-i18n="fleetTitle">Interactive 3D Heavy Fleet Inspection</h2>
+          <p class="section-subtitle" data-i18n="fleetSubtitle">
+            Rotate, zoom, and inspect our heavy-duty tractor units in real-time 3D or compare studio specifications.
+          </p>
         </div>
-        <div class="cards-grid">
-            <div class="card">
-                <i class="fa-solid fa-bus-simple card-icon"></i>
-                <h3 data-i18n="c1_title">ناوگان مینی‌بوس و اتوبوس</h3>
-                <p data-i18n="c1_desc">مجهز به کولر و امکانات مناسب برای جابجایی ایمن پرسنل در شیفت‌های کاری منطقه عسلویه و کنگان.</p>
+
+        <div class="showcase-grid">
+          <!-- Interactive 3D GLB Model Viewer Container -->
+          <div class="model-stage tilt-card">
+            <div class="stage-toolbar">
+              <span class="stage-tag">3D MODEL // truck.glb</span>
+              <div class="stage-buttons">
+                <button type="button" id="btn-auto-rotate" class="btn-3d btn-3d-xs active" data-i18n="btnAutoRotate">Auto-Rotate</button>
+                <button type="button" id="btn-reset-cam" class="btn-3d btn-3d-xs" data-i18n="btnResetView">Reset View</button>
+              </div>
             </div>
-            <div class="card">
-                <i class="fa-solid fa-van-shuttle card-icon"></i>
-                <h3 data-i18n="c2_title">خودروهای ون و سواری سازمانی</h3>
-                <p data-i18n="c2_desc">تأمین خودروهای تشریفاتی و پرسنلی با رانندگان مجرب، متعهد و آشنا به پروتکل‌های ایمنی صنعت نفت.</p>
+
+            <model-viewer
+              id="truck-viewer"
+              src="truck.glb"
+              poster="Photo_01.png"
+              alt="KLT Holding Heavy Transport Tractor 3D Model"
+              camera-controls
+              auto-rotate
+              shadow-intensity="1.4"
+              exposure="1.05"
+              environment-image="neutral"
+              interaction-prompt="auto"
+              class="glb-canvas">
+            </model-viewer>
+
+            <div class="stage-footer">
+              <span data-i18n="stageHint">Drag to rotate 360° &bull; Scroll to zoom</span>
             </div>
-            <div class="card">
-                <i class="fa-solid fa-file-contract card-icon"></i>
-                <h3 data-i18n="c3_title">قراردادهای بلندمدت شرکتی</h3>
-                <p data-i18n="c3_desc">انعقاد تفاهم‌نامه‌های رسمی با کارخانجات، شرکت‌های پیمانکاری و مجتمع‌های پتروشیمی جنوب.</p>
+          </div>
+
+          <!-- Technical Specifications & Studio Visual Card -->
+          <div class="specs-column">
+            <div class="studio-preview-card tilt-card">
+              <img src="Photo_01.png" alt="Heavy Tractor Studio Profile" class="studio-img" />
+              <div class="studio-caption">
+                <strong data-i18n="studioCardTitle">Euro-6 Heavy Long-Haul Series</strong>
+                <span data-i18n="studioCardSub">Configured for South Pars &amp; Bushehr Industrial Zones</span>
+              </div>
             </div>
+
+            <div class="spec-cards-list">
+              <div class="spec-item tilt-card">
+                <h3 data-i18n="spec1Title">High-Torque Powertrain</h3>
+                <p data-i18n="spec1Desc">Engineered for steep coastal gradients and continuous heavy industrial cargo transport.</p>
+              </div>
+              <div class="spec-item tilt-card">
+                <h3 data-i18n="spec2Title">Reinforced Multi-Axle Chassis</h3>
+                <p data-i18n="spec2Desc">Built to support oversized petrochemical, port, and construction machinery modules.</p>
+              </div>
+              <div class="spec-item tilt-card">
+                <h3 data-i18n="spec3Title">Real-Time Fleet Telemetry</h3>
+                <p data-i18n="spec3Desc">Live axle-load sensors, fuel diagnostics, and encrypted GPS corridor monitoring.</p>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </section>
 
-    <!-- Showroom Section: Used Trucks -->
-    <section class="showroom-section" id="showroom">
+    <!-- Corporate Holding Divisions with BG_Link.jpg Banner -->
+    <section id="divisions" class="section-block divisions-section">
+      <div class="divisions-banner-wrap">
+        <img src="BG_Link.jpg" alt="KLT Holding Global Network Banner" class="divisions-banner-img" />
+        <div class="divisions-banner-overlay"></div>
+      </div>
+
+      <div class="container relative-z">
         <div class="section-header">
-            <h2 data-i18n="show_title">بخش دوم: نمایشگاه ماشین‌آلات سنگین و کشنده‌ها</h2>
-            <p data-i18n="show_subtitle">خرید و فروش تخصصی انواع کشنده، کامیون و تریلر دست‌دوم با کارشناسی فنی در استان بوشهر</p>
+          <span class="section-eyebrow" data-i18n="divEyebrow">INTEGRATED HOLDING STRUCTURE</span>
+          <h2 class="section-title" data-i18n="divTitle">Core Operational Divisions</h2>
         </div>
-        <div class="truck-grid">
-            <div class="truck-card">
-                <img src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=800&q=80" alt="Truck">
-                <div class="truck-info">
-                    <h3>کشنده امپاور BD500 (کارکرده تمیز)</h3>
-                    <p class="specs">مدل ۱۴۰۲ | کارکرد: ۸۰ هزار کیلومتر | فنی به شرط کارشناسی</p>
-                    <a href="#contact" class="btn-sm" data-i18n="btn_inquiry">استعلام قیمت و خرید</a>
-                </div>
-            </div>
-            <div class="truck-card">
-                <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80" alt="Truck">
-                <div class="truck-info">
-                    <h3>کامیون بایک X9 (نمایشگاهی)</h3>
-                    <p class="specs">مدل ۱۴۰۳ | صفر کیلومتر سند آزاد | تحویل فوری در کنگان</p>
-                    <a href="#contact" class="btn-sm" data-i18n="btn_inquiry">استعلام قیمت و خرید</a>
-                </div>
-            </div>
+
+        <div class="divisions-grid">
+          <article class="division-card tilt-card">
+            <div class="div-index">01</div>
+            <h3 data-i18n="div1Title">Heavy Road &amp; Project Haulage</h3>
+            <p data-i18n="div1Desc">Specialized flatbed, low-bed, and multi-axle transport across Kangan, Assaluyeh, and national transit routes.</p>
+          </article>
+
+          <article class="division-card tilt-card">
+            <div class="div-index">02</div>
+            <h3 data-i18n="div2Title">Maritime &amp; Port Logistics</h3>
+            <p data-i18n="div2Desc">Seamless port clearance, container handling, and vessel-to-truck synchronization in Persian Gulf ports.</p>
+          </article>
+
+          <article class="division-card tilt-card">
+            <div class="div-index">03</div>
+            <h3 data-i18n="div3Title">Heavy Machinery &amp; Fleet Supply</h3>
+            <p data-i18n="div3Desc">Authorized commercial vehicle operations, maintenance infrastructure, and industrial machinery leasing.</p>
+          </article>
+
+          <article class="division-card tilt-card">
+            <div class="div-index">04</div>
+            <h3 data-i18n="div4Title">International Transit &amp; Customs</h3>
+            <p data-i18n="div4Desc">Cross-border freight forwarding connecting regional energy hubs with international trade corridors.</p>
+          </article>
         </div>
+      </div>
     </section>
 
-    <!-- Contact & Location Info -->
-    <section class="contact-section" id="contact">
-        <div class="contact-box">
-            <h2 data-i18n="contact_title">ارتباط با دفتر مرکزی (نمایندگی علی‌آبادی)</h2>
-            <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="addr">بوشهر، کنگان، ورودی شهر، بلوار امام خمینی، جنب دروازه قرآن، پلاک ۵۱</span></p>
-            <p><i class="fa-solid fa-phone"></i> <span>۰۷۷-۳۷۲۳۶۲۷۴</span></p>
-            <p><i class="fa-solid fa-clock"></i> <span data-i18n="hours">شنبه تا پنج‌شنبه: ۸:۰۰ الی ۱۷:۰۰</span></p>
+    <!-- Interactive Freight & Payload Quote Estimator -->
+    <section id="quote" class="section-block">
+      <div class="container">
+        <div class="quote-wrapper tilt-card">
+          <div class="quote-info">
+            <span class="section-eyebrow" data-i18n="quoteEyebrow">INSTANT DISPATCH ESTIMATION</span>
+            <h2 class="section-title" data-i18n="quoteTitle">Freight &amp; Heavy Haulage Calculator</h2>
+            <p class="section-subtitle" data-i18n="quoteSubtitle">
+              Configure cargo weight, transit distance, and transport class to receive an immediate operational estimate.
+            </p>
+          </div>
+
+          <form id="quote-form" class="quote-form">
+            <div class="form-group">
+              <label for="cargo-type" data-i18n="labelCargoType">Transport Category</label>
+              <select id="cargo-type" class="form-control">
+                <option value="standard" data-i18n="optStandard">Standard Commercial Freight</option>
+                <option value="heavy" data-i18n="optHeavy">Heavy Machinery / Low-Bed</option>
+                <option value="port" data-i18n="optPort">Port Container Transit</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="cargo-weight" data-i18n="labelWeight">Payload Weight (Metric Tons)</label>
+              <input type="number" id="cargo-weight" class="form-control" min="1" max="150" value="24" required />
+            </div>
+
+            <div class="form-group">
+              <label for="cargo-distance" data-i18n="labelDistance">Estimated Distance (km)</label>
+              <input type="number" id="cargo-distance" class="form-control" min="10" max="5000" value="450" required />
+            </div>
+
+            <div class="quote-result-box">
+              <span class="result-label" data-i18n="labelEstimate">Estimated Operational Index</span>
+              <strong id="quote-output" class="result-value">$2,160 USD</strong>
+            </div>
+
+            <button type="submit" class="btn-3d btn-3d-amber btn-full">
+              <span data-i18n="btnRequestDispatch">Request Official Dispatch Proposal</span>
+            </button>
+            <p id="quote-feedback" class="form-feedback" aria-live="polite"></p>
+          </form>
         </div>
+      </div>
     </section>
+  </main>
 
-    <!-- Footer -->
-    <footer>
-        <p data-i18n="footer_text">تمامی حقوق مادی و معنوی این وب‌سایت متعلق به گروه ترابری و لجستیک علی‌آبادی (کنگان) می‌باشد.</p>
-    </footer>
+  <!-- Corporate Footer with Bandar Kangan Hub Details -->
+  <footer id="contact" class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="Logo01.jpg" alt="KLT Holding Emblem" class="footer-logo" />
+        <div>
+          <h3>KLT HOLDING</h3>
+          <p data-i18n="footerTagline">Kian Logistics &amp; Transport Holding — Built for Global Scale.</p>
+        </div>
+      </div>
 
-    <script src="app.js"></script>
+      <div class="footer-hub">
+        <h4 data-i18n="footerHubTitle">Operations Headquarters</h4>
+        <p data-i18n="footerAddress">Bandar Kangan, Bushehr Province, Persian Gulf Coast, Iran</p>
+        <a href="https://maps.app.goo.gl/L64hACZjYzC8X3497" target="_blank" rel="noopener noreferrer" class="btn-3d btn-3d-sm">
+          <span data-i18n="btnOpenMap">View Hub on Google Maps</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Kian Logistics &amp; Transport Holding (KLT Holding). All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>

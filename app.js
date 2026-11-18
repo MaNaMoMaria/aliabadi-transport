@@ -1,285 +1,301 @@
-let scene, camera, renderer, loadedTruck;
-let lightsOn = false;
-let spotLightLeft, spotLightRight, glowLeft, glowRight, ambientLight;
+/* ==========================================================================
+   KLT HOLDING - Bilingual Engine (EN / FA), Theme Controller & 3D Interactions
+   ========================================================================== */
 
-function init3D() {
-    const container = document.getElementById('webgl-container');
-    if (!container) return;
-
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(4.5, 2.2, 5.5);
-    camera.lookAt(0, 0.5, 0);
-
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-    container.appendChild(renderer.domElement);
-
-    // Studio & Environment Lighting
-    ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
-    scene.add(ambientLight);
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
-    dirLight.position.set(8, 15, 10);
-    scene.add(dirLight);
-
-    const backLight = new THREE.DirectionalLight(0x3b82f6, 1.2);
-    backLight.position.set(-8, 5, -10);
-    scene.add(backLight);
-
-    // Ground Plane
-    const groundGeo = new THREE.PlaneGeometry(30, 30);
-    const groundMat = new THREE.MeshStandardMaterial({ 
-        color: 0x0b0f19, 
-        roughness: 0.4, 
-        metalness: 0.6,
-        transparent: true,
-        opacity: 0.6
-    });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.8;
-    scene.add(ground);
-
-    // Load truck.glb model
-    const loader = new THREE.GLTFLoader();
-    loader.load(
-        'truck.glb',
-        function (gltf) {
-            loadedTruck = gltf.scene;
-
-            // Auto-Center and Auto-Scale
-            const box = new THREE.Box3().setFromObject(loadedTruck);
-            const size = box.getSize(new THREE.Vector3());
-            const center = box.getCenter(new THREE.Vector3());
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const scale = 4.2 / maxDim;
-
-            loadedTruck.scale.set(scale, scale, scale);
-            loadedTruck.position.x = -center.x * scale;
-            loadedTruck.position.y = -box.min.y * scale - 0.8;
-            loadedTruck.position.z = -center.z * scale;
-
-            scene.add(loadedTruck);
-            setupTruckHeadlights(size, scale);
-        },
-        undefined,
-        function (error) {
-            console.error('Error loading truck.glb:', error);
-        }
-    );
-
-    // Mouse & Touch Rotation
-    let isDragging = false;
-    let previousMousePosition = { x: 0, y: 0 };
-
-    container.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
-    container.addEventListener('mousemove', (e) => {
-        if (!isDragging || !loadedTruck) return;
-        const deltaX = e.clientX - previousMousePosition.x;
-        loadedTruck.rotation.y += deltaX * 0.01;
-        previousMousePosition = { x: e.clientX, y: e.clientY };
-    });
-    window.addEventListener('mouseup', () => { isDragging = false; });
-
-    container.addEventListener('touchstart', (e) => { isDragging = true; previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
-    container.addEventListener('touchmove', (e) => {
-        if (!isDragging || !loadedTruck) return;
-        const deltaX = e.touches[0].clientX - previousMousePosition.x;
-        loadedTruck.rotation.y += deltaX * 0.01;
-        previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    });
-
-    window.addEventListener('resize', onWindowResize);
-    animate();
-}
-
-function setupTruckHeadlights(size, scale) {
-    const frontZ = (size.z * scale) / 2;
-    const widthX = (size.x * scale) * 0.32;
-    const heightY = -0.25;
-
-    const glowGeo = new THREE.SphereGeometry(0.12, 16, 16);
-    const glowMat = new THREE.MeshBasicMaterial({ color: 0xfffbeb, transparent: true, opacity: 0 });
-
-    glowLeft = new THREE.Mesh(glowGeo, glowMat.clone());
-    scene.add(glowLeft);
-
-    glowRight = new THREE.Mesh(glowGeo, glowMat.clone());
-    scene.add(glowRight);
-
-    spotLightLeft = new THREE.SpotLight(0xffeaa7, 0, 15, Math.PI / 5, 0.5, 1);
-    scene.add(spotLightLeft);
-    scene.add(spotLightLeft.target);
-
-    spotLightRight = new THREE.SpotLight(0xffeaa7, 0, 15, Math.PI / 5, 0.5, 1);
-    scene.add(spotLightRight);
-    scene.add(spotLightRight.target);
-}
-
-function animate() {
-    requestAnimationFrame(animate);
-    if (loadedTruck) {
-        loadedTruck.rotation.y += 0.002;
-        
-        if (spotLightLeft && glowLeft) {
-            const angle = loadedTruck.rotation.y;
-            const radius = 2.0;
-            const offsetX = 0.65;
-
-            const lx = Math.sin(angle) * radius - Math.cos(angle) * offsetX;
-            const lz = Math.cos(angle) * radius + Math.sin(angle) * offsetX;
-            glowLeft.position.set(lx, -0.25, lz);
-            spotLightLeft.position.set(lx, -0.25, lz);
-            spotLightLeft.target.position.set(lx + Math.sin(angle) * 5, -0.8, lz + Math.cos(angle) * 5);
-
-            const rx = Math.sin(angle) * radius + Math.cos(angle) * offsetX;
-            const rz = Math.cos(angle) * radius - Math.sin(angle) * offsetX;
-            glowRight.position.set(rx, -0.25, rz);
-            spotLightRight.position.set(rx, -0.25, rz);
-            spotLightRight.target.position.set(rx + Math.sin(angle) * 5, -0.8, rz + Math.cos(angle) * 5);
-        }
-    }
-    renderer.render(scene, camera);
-}
-
-function onWindowResize() {
-    const container = document.getElementById('webgl-container');
-    if (!container) return;
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-}
-
-// Toggle Headlights
-document.getElementById('toggle-lights-btn')?.addEventListener('click', () => {
-    lightsOn = !lightsOn;
-
-    if (ambientLight) ambientLight.intensity = lightsOn ? 0.55 : 1.4;
-    if (spotLightLeft && spotLightRight) {
-        spotLightLeft.intensity = lightsOn ? 6 : 0;
-        spotLightRight.intensity = lightsOn ? 6 : 0;
-    }
-    if (glowLeft && glowRight) {
-        glowLeft.material.opacity = lightsOn ? 0.95 : 0;
-        glowRight.material.opacity = lightsOn ? 0.95 : 0;
-    }
-
-    if (loadedTruck) {
-        loadedTruck.traverse((child) => {
-            if (child.isMesh && (child.name.toLowerCase().includes('light') || child.name.toLowerCase().includes('lamp'))) {
-                if (child.material) {
-                    child.material.emissive = lightsOn ? new THREE.Color(0xffeaa7) : new THREE.Color(0x000000);
-                    child.material.emissiveIntensity = lightsOn ? 3 : 0;
-                }
-            }
-        });
-    }
-
-    const btnSpan = document.querySelector('#toggle-lights-btn span');
-    if (btnSpan) {
-        btnSpan.textContent = lightsOn 
-            ? (currentLang === 'fa' ? 'خاموش کردن چراغ‌ها' : 'Turn Off Lights') 
-            : (currentLang === 'fa' ? 'روشن کردن چراغ‌ها' : 'Turn On Lights');
-    }
-});
-
-// Localization & Theme
 const translations = {
-    fa: {
-        meta_title: "گروه ترابری و لجستیک علی‌آبادی | کنگان",
-        brand_name: "علی‌آبادی | کنگان",
-        nav_services: "لجستیک پرسنلی",
-        nav_showroom: "نمایشگاه کامیون",
-        nav_3d: "مدل سه‌بعدی",
-        nav_contact: "تماس با ما",
-        hero_badge: "منطقه ویژه انرژی پارس (کنگان / عسلویه)",
-        hero_title: "پیشران لجستیک نفت و گاز و بازار ماشین‌آلات سنگین",
-        hero_desc: "تأمین مطمئن ناوگان ترابری پرسنل شرکت‌های صنعتی و مرجع تخصصی خرید و فروش کشنده‌های کارکرده در جنوب کشور.",
-        btn_contract: "استعلام قرارداد سازمانی",
-        btn_trucks: "مشاهده کشنده‌ها",
-        btn_lights: "روشن کردن چراغ‌ها",
-        canvas_hint: "برای چرخش مدل، با موس بکشید",
-        serv_title: "بخش اول: لجستیک و ترابری شرکتی (پیمانکاری)",
-        serv_subtitle: "ارائه خدمات تخصصی حمل‌ونقل پرسنل و کارمندان با قراردادهای رسمی با پالایشگاه‌ها و پتروشیمی‌ها",
-        c1_title: "ناوگان مینی‌بوس و اتوبوس",
-        c1_desc: "مجهز به کولر و امکانات مناسب برای جابجایی ایمن پرسنل در شیفت‌های کاری منطقه عسلویه و کنگان.",
-        c2_title: "خودروهای ون و سواری سازمانی",
-        c2_desc: "تأمین خودروهای تشریفاتی و پرسنلی با رانندگان مجرب، متعهد و آشنا به پروتکل‌های ایمنی صنعت نفت.",
-        c3_title: "قراردادهای بلندمدت شرکتی",
-        c3_desc: "انعقاد تفاهم‌نامه‌های رسمی با کارخانجات، شرکت‌های پیمانکاری و مجتمع‌های پتروشیمی جنوب.",
-        show_title: "بخش دوم: نمایشگاه ماشین‌آلات سنگین و کشنده‌ها",
-        show_subtitle: "خرید و فروش تخصصی انواع کشنده، کامیون و تریلر دست‌دوم با کارشناسی فنی در استان بوشهر",
-        btn_inquiry: "استعلام قیمت و خرید",
-        contact_title: "ارتباط با دفتر مرکزی (نمایندگی علی‌آبادی)",
-        addr: "بوشهر، کنگان، ورودی شهر، بلوار امام خمینی، جنب دروازه قرآن، پلاک ۵۱",
-        hours: "شنبه تا پنج‌شنبه: ۸:۰۰ الی ۱۷:۰۰",
-        footer_text: "تمامی حقوق مادی و معنوی این وب‌سایت متعلق به گروه ترابری و لجستیک علی‌آبادی (کنگان) می‌باشد."
-    },
-    en: {
-        meta_title: "Aliabadi Transport & Logistics | Kangan",
-        brand_name: "Aliabadi | Kangan",
-        nav_services: "Personnel Logistics",
-        nav_showroom: "Truck Showroom",
-        nav_3d: "3D Model",
-        nav_contact: "Contact Us",
-        hero_badge: "Pars Special Energy Zone (Kangan / Assaluyeh)",
-        hero_title: "Oil & Gas Logistics Pioneer & Heavy Machinery Hub",
-        hero_desc: "Reliable personnel transport fleet for industrial firms & specialized heavy truck trading in southern Iran.",
-        btn_contract: "Inquire Corporate Contract",
-        btn_trucks: "View Trucks",
-        btn_lights: "Turn On Lights",
-        canvas_hint: "Drag to rotate the 3D model",
-        serv_title: "Part 1: Corporate Personnel Transport & Contracting",
-        serv_subtitle: "Providing specialized staff transportation services with official contracts for refineries & petrochemicals",
-        c1_title: "Bus & Minibus Fleet",
-        c1_desc: "Equipped with AC and high comfort for safe personnel transfers across Assaluyeh & Kangan shifts.",
-        c2_title: "Vans & Corporate Sedans",
-        c2_desc: "Providing VIP & personnel cars with experienced drivers familiar with oil industry safety protocols.",
-        c3_title: "Long-Term Corporate Contracts",
-        c3_desc: "Official agreements with manufacturing plants, contractors, and southern petrochemical complexes.",
-        show_title: "Part 2: Heavy Machinery & Truck Showroom",
-        show_subtitle: "Specialized buying and selling of used tractors, trucks, and trailers with technical inspection in Bushehr",
-        btn_inquiry: "Price Inquiry & Buy",
-        contact_title: "Head Office Contact (Aliabadi Agency)",
-        addr: "Bushehr, Kangan, City Entrance, Imam Khomeini Blvd, Next to Quran Gate, No. 51",
-        hours: "Sat - Thu: 8:00 AM - 5:00 PM",
-        footer_text: "All rights reserved © Aliabadi Transport & Logistics Group (Kangan)."
-    }
+  en: {
+    brandSubtitle: "Kian Logistics & Transport",
+    navHome: "Home",
+    navFleet: "3D Fleet",
+    navDivisions: "Divisions",
+    navQuote: "Freight Quote",
+    navContact: "Hub & Contact",
+    heroBadge: "BANDAR KANGAN & BUSHEHR STRATEGIC CORRIDOR",
+    heroTitle: "Precision Heavy Logistics Across the Persian Gulf & Global Corridors",
+    heroDesc:
+      "Kian Logistics & Transport Holding delivers enterprise-grade freight forwarding, heavy machinery haulage, and integrated port-to-door supply chain infrastructure.",
+    ctaExploreFleet: "Inspect 3D Fleet",
+    ctaGetQuote: "Calculate Freight",
+    statHub: "Primary Maritime Hub",
+    statHubVal: "Bandar Kangan, Bushehr",
+    statPayload: "Max Heavy Payload",
+    statPayloadVal: "120+ Metric Tons",
+    statTracking: "Satellite Dispatch",
+    statTrackingVal: "24/7 GPS & Telemetry",
+    fleetEyebrow: "VOLVO-GRADE ENGINEERING STANDARDS",
+    fleetTitle: "Interactive 3D Heavy Fleet Inspection",
+    fleetSubtitle:
+      "Rotate, zoom, and inspect our heavy-duty tractor units in real-time 3D or compare studio specifications.",
+    btnAutoRotate: "Auto-Rotate",
+    btnResetView: "Reset View",
+    stageHint: "Drag to rotate 360° • Scroll to zoom",
+    studioCardTitle: "Euro-6 Heavy Long-Haul Series",
+    studioCardSub: "Configured for South Pars & Bushehr Industrial Zones",
+    spec1Title: "High-Torque Powertrain",
+    spec1Desc:
+      "Engineered for steep coastal gradients and continuous heavy industrial cargo transport.",
+    spec2Title: "Reinforced Multi-Axle Chassis",
+    spec2Desc:
+      "Built to support oversized petrochemical, port, and construction machinery modules.",
+    spec3Title: "Real-Time Fleet Telemetry",
+    spec3Desc:
+      "Live axle-load sensors, fuel diagnostics, and encrypted GPS corridor monitoring.",
+    divEyebrow: "INTEGRATED HOLDING STRUCTURE",
+    divTitle: "Core Operational Divisions",
+    div1Title: "Heavy Road & Project Haulage",
+    div1Desc:
+      "Specialized flatbed, low-bed, and multi-axle transport across Kangan, Assaluyeh, and national transit routes.",
+    div2Title: "Maritime & Port Logistics",
+    div2Desc:
+      "Seamless port clearance, container handling, and vessel-to-truck synchronization in Persian Gulf ports.",
+    div3Title: "Heavy Machinery & Fleet Supply",
+    div3Desc:
+      "Authorized commercial vehicle operations, maintenance infrastructure, and industrial machinery leasing.",
+    div4Title: "International Transit & Customs",
+    div4Desc:
+      "Cross-border freight forwarding connecting regional energy hubs with international trade corridors.",
+    quoteEyebrow: "INSTANT DISPATCH ESTIMATION",
+    quoteTitle: "Freight & Heavy Haulage Calculator",
+    quoteSubtitle:
+      "Configure cargo weight, transit distance, and transport class to receive an immediate operational estimate.",
+    labelCargoType: "Transport Category",
+    optStandard: "Standard Commercial Freight",
+    optHeavy: "Heavy Machinery / Low-Bed",
+    optPort: "Port Container Transit",
+    labelWeight: "Payload Weight (Metric Tons)",
+    labelDistance: "Estimated Distance (km)",
+    labelEstimate: "Estimated Operational Index",
+    btnRequestDispatch: "Request Official Dispatch Proposal",
+    quoteSent: "Dispatch inquiry logged. KLT operations team in Bandar Kangan will respond shortly.",
+    footerTagline: "Kian Logistics & Transport Holding — Built for Global Scale.",
+    footerHubTitle: "Operations Headquarters",
+    footerAddress: "Bandar Kangan, Bushehr Province, Persian Gulf Coast, Iran",
+    btnOpenMap: "View Hub on Google Maps",
+    toggleLangText: "فارسی"
+  },
+  fa: {
+    brandSubtitle: "هلدینگ حمل‌ونقل و لجستیک کیان",
+    navHome: "صفحه اصلی",
+    navFleet: "ناوگان سه‌بعدی",
+    navDivisions: "بخش‌های هلدینگ",
+    navQuote: "برآورد هزینه",
+    navContact: "مرکز عملیات و تماس",
+    heroBadge: "کریدور استراتژیک بندر کنگان و استان بوشهر",
+    heroTitle: "لجستیک فوق‌سنگین و ترابری هوشمند در خلیج فارس و مسیرهای بین‌المللی",
+    heroDesc:
+      "هلدینگ حمل‌ونقل و لجستیک کیان (KLT) ارائه‌دهنده خدمات پیشرفته فورواردری، حمل ماشین‌آلات سنگین و زیرساخت یکپارچه زنجیره تأمین از بندر تا مقصد است.",
+    ctaExploreFleet: "بررسی سه‌بعدی ناوگان",
+    ctaGetQuote: "محاسبه کرایه حمل",
+    statHub: "پایگاه اصلی دریایی",
+    statHubVal: "بندر کنگان، استان بوشهر",
+    statPayload: "حداکثر ظرفیت حمل سنگین",
+    statPayloadVal: "بیش از ۱۲۰ تن",
+    statTracking: "دیسپچ ماهواره‌ای",
+    statTrackingVal: "پایش ۲۴ ساعته GPS",
+    fleetEyebrow: "استانداردهای مهندسی در تراز جهانی",
+    fleetTitle: "بررسی تعاملی و سه‌بعدی ناوگان سنگین",
+    fleetSubtitle:
+      "کشنده‌های سنگین هلدینگ را به‌صورت ۳۶۰ درجه بچرخانید، بزرگ‌نمایی کنید و مشخصات فنی آن‌ها را بررسی نمایید.",
+    btnAutoRotate: "چرخش خودکار",
+    btnResetView: "بازنشانی زاویه",
+    stageHint: "برای چرخش ۳۶۰ درجه بکشید • برای بزرگ‌نمایی اسکرول کنید",
+    studioCardTitle: "سری کشنده‌های فوق‌سنگین یورو ۶",
+    studioCardSub: "تجهیز شده برای مناطق صنعتی پارس جنوبی و بوشهر",
+    spec1Title: "پیشرانه با گشتاور بالا",
+    spec1Desc:
+      "مهندسی‌شده برای شیب‌های جاده‌ای و حمل مستمر محموله‌های سنگین صنعتی و پتروشیمی.",
+    spec2Title: "شاسی تقویت‌شده چندمحوره",
+    spec2Desc:
+      "طراحی‌شده برای جابه‌جایی تجهیزات فوق‌سنگین بندری، نیروگاهی و ماشین‌آلات راهسازی.",
+    spec3Title: "تله‌متری لحظه‌ای ناوگان",
+    spec3Desc:
+      "سنسورهای هوشمند وزن محور، پایش مصرف سوخت و ردیابی ماهواره‌ای رمزنگاری‌شده.",
+    divEyebrow: "ساختار یکپارچه سازمانی",
+    divTitle: "دپارتمان‌های عملیاتی هلدینگ",
+    div1Title: "حمل‌ونقل جاده‌ای و پروژه‌ای سنگین",
+    div1Desc:
+      "ناوگان تخصصی کفی، کمرشکن و بوژی برای مسیرهای کنگان، عسلویه و کریدورهای ترانزیتی کشور.",
+    div2Title: "لجستیک دریایی و بندری",
+    div2Desc:
+      "ترخیص سریع، جابه‌جایی کانتینر و هماهنگی مستقیم کشتی به کامیون در بنادر خلیج فارس.",
+    div3Title: "تأمین ناوگان و ماشین‌آلات سنگین",
+    div3Desc:
+      "عملیات ناوگان تجاری مجاز، زیرساخت تعمیر و نگهداری و تأمین ماشین‌آلات صنعتی.",
+    div4Title: "ترانزیت بین‌الملل و امور گمرکی",
+    div4Desc:
+      "فورواردری فرامرزی برای اتصال قطب‌های انرژی منطقه به شبکه‌های تجارت جهانی.",
+    quoteEyebrow: "برآورد سریع عملیات",
+    quoteTitle: "ماشین‌حساب هوشمند حمل‌ونقل و لجستیک",
+    quoteSubtitle:
+      "وزن محموله، مسافت و نوع ناوگان را وارد کنید تا شاخص برآورد عملیات بلافاصله محاسبه شود.",
+    labelCargoType: "نوع عملیات حمل",
+    optStandard: "حمل تجاری استاندارد",
+    optHeavy: "ماشین‌آلات سنگین / کمرشکن",
+    optPort: "ترانزیت کانتینر بندری",
+    labelWeight: "وزن محموله (تن)",
+    labelDistance: "مسافت تقریبی (کیلومتر)",
+    labelEstimate: "شاخص برآورد هزینه عملیات",
+    btnRequestDispatch: "ثبت درخواست پروپوزال رسمی حمل",
+    quoteSent: "درخواست شما ثبت شد. تیم عملیات KLT در بندر کنگان به‌زودی با شما تماس می‌گیرد.",
+    footerTagline: "هلدینگ حمل‌ونقل و لجستیک کیان — ساخته‌شده برای مقیاس جهانی.",
+    footerHubTitle: "ستاد مرکزی عملیات",
+    footerAddress: "بندر کنگان، استان بوشهر، ساحل خلیج فارس، ایران",
+    btnOpenMap: "مشاهده موقعیت در گوگل مپ",
+    toggleLangText: "English"
+  }
 };
 
-let currentLang = 'fa';
+document.addEventListener("DOMContentLoaded", () => {
+  const htmlEl = document.documentElement;
+  const splashEl = document.getElementById("lang-splash");
+  const langToggleBtn = document.getElementById("lang-toggle");
+  const langToggleLabel = document.getElementById("lang-toggle-label");
+  const themeToggleBtn = document.getElementById("theme-toggle");
+  const themeIcon = document.getElementById("theme-icon");
 
-const langToggleBtn = document.getElementById('lang-toggle');
-langToggleBtn?.addEventListener('click', () => {
-    currentLang = currentLang === 'fa' ? 'en' : 'fa';
-    langToggleBtn.textContent = currentLang === 'fa' ? 'EN' : 'FA';
-    
-    document.documentElement.setAttribute('lang', currentLang);
-    document.documentElement.setAttribute('dir', currentLang === 'fa' ? 'rtl' : 'ltr');
+  let currentLang = "en";
+  let currentTheme = "dark";
 
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[currentLang][key]) {
-            el.textContent = translations[currentLang][key];
-        }
+  /* Apply Language & Direction (LTR / RTL) */
+  function setLanguage(lang) {
+    currentLang = lang;
+    htmlEl.setAttribute("lang", lang);
+    htmlEl.setAttribute("dir", lang === "fa" ? "rtl" : "ltr");
+
+    const dict = translations[lang];
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      if (dict[key]) {
+        el.textContent = dict[key];
+      }
     });
-});
 
-const themeToggleBtn = document.getElementById('theme-toggle');
-const htmlEl = document.documentElement;
+    if (langToggleLabel) {
+      langToggleLabel.textContent = dict.toggleLangText;
+    }
 
-themeToggleBtn?.addEventListener('click', () => {
-    const currentTheme = htmlEl.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    htmlEl.setAttribute('data-theme', newTheme);
-    themeToggleBtn.innerHTML = newTheme === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-});
+    localStorage.setItem("klt_lang", lang);
+  }
 
-window.addEventListener('DOMContentLoaded', () => {
-    init3D();
+  /* Apply Dark or Light Theme */
+  function setTheme(theme) {
+    currentTheme = theme;
+    htmlEl.setAttribute("data-theme", theme);
+    if (themeIcon) {
+      themeIcon.innerHTML = theme === "dark" ? "&#9788;" : "&#9790;";
+    }
+    localStorage.setItem("klt_theme", theme);
+  }
+
+  /* Splash Screen Language Buttons */
+  document.querySelectorAll("[data-select-lang]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const selected = btn.getAttribute("data-select-lang");
+      setLanguage(selected);
+      if (splashEl) {
+        splashEl.classList.add("hidden");
+      }
+    });
+  });
+
+  /* Header Language Switcher */
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener("click", () => {
+      setLanguage(currentLang === "en" ? "fa" : "en");
+    });
+  }
+
+  /* Header Theme Switcher */
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      setTheme(currentTheme === "dark" ? "light" : "dark");
+    });
+  }
+
+  /* Restore Saved Theme Preference */
+  const savedTheme = localStorage.getItem("klt_theme");
+  if (savedTheme === "light" || savedTheme === "dark") {
+    setTheme(savedTheme);
+  }
+
+  /* 3D Model Viewer Controls for truck.glb */
+  const truckViewer = document.getElementById("truck-viewer");
+  const btnAutoRotate = document.getElementById("btn-auto-rotate");
+  const btnResetCam = document.getElementById("btn-reset-cam");
+
+  if (truckViewer && btnAutoRotate) {
+    btnAutoRotate.addEventListener("click", () => {
+      const isRotating = truckViewer.hasAttribute("auto-rotate");
+      if (isRotating) {
+        truckViewer.removeAttribute("auto-rotate");
+        btnAutoRotate.classList.remove("active");
+      } else {
+        truckViewer.setAttribute("auto-rotate", "");
+        btnAutoRotate.classList.add("active");
+      }
+    });
+  }
+
+  if (truckViewer && btnResetCam) {
+    btnResetCam.addEventListener("click", () => {
+      truckViewer.cameraOrbit = "auto auto auto";
+      truckViewer.fieldOfView = "auto";
+    });
+  }
+
+  /* Freight Quote Estimator Logic */
+  const cargoTypeEl = document.getElementById("cargo-type");
+  const cargoWeightEl = document.getElementById("cargo-weight");
+  const cargoDistanceEl = document.getElementById("cargo-distance");
+  const quoteOutputEl = document.getElementById("quote-output");
+  const quoteFormEl = document.getElementById("quote-form");
+  const quoteFeedbackEl = document.getElementById("quote-feedback");
+
+  function calculateEstimate() {
+    if (!cargoTypeEl || !cargoWeightEl || !cargoDistanceEl || !quoteOutputEl) return;
+
+    const rates = {
+      standard: 0.2,
+      heavy: 0.38,
+      port: 0.26
+    };
+
+    const type = cargoTypeEl.value;
+    const weight = Math.max(1, Number(cargoWeightEl.value) || 0);
+    const distance = Math.max(10, Number(cargoDistanceEl.value) || 0);
+    const total = Math.round(weight * distance * (rates[type] || 0.2));
+
+    quoteOutputEl.textContent = `$${total.toLocaleString("en-US")} USD`;
+  }
+
+  [cargoTypeEl, cargoWeightEl, cargoDistanceEl].forEach((input) => {
+    if (input) {
+      input.addEventListener("input", calculateEstimate);
+    }
+  });
+
+  if (quoteFormEl) {
+    quoteFormEl.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (quoteFeedbackEl) {
+        quoteFeedbackEl.textContent = translations[currentLang].quoteSent;
+      }
+    });
+  }
+
+  calculateEstimate();
+
+  /* Subtle 3D Perspective Tilt on Interactive Cards */
+  document.querySelectorAll(".tilt-card").forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `perspective(1000px) rotateY(${x * 5}deg) rotateX(${-y * 5}deg)`;
+    });
+
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "perspective(1000px) rotateY(0deg) rotateX(0deg)";
+    });
+  });
 });

@@ -1,366 +1,835 @@
+/* ==========================================================================
+   KLT HOLDING - Industrial Modern 3D Design System (Dark & Light Themes)
+   ========================================================================== */
+
 :root {
-    --bg-color: #0b0f19;
-    --card-bg: #151b2b;
-    --text-color: #f3f4f6;
-    --text-muted: #9ca3af;
-    --primary: #f59e0b;
-    --primary-hover: #d97706;
-    --accent: #3b82f6;
-    --border-color: rgba(255, 255, 255, 0.1);
+  --bg-primary: #0b0f19;
+  --bg-secondary: #121826;
+  --bg-surface: #161e2e;
+  --bg-glass: rgba(18, 24, 38, 0.78);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: rgba(148, 163, 184, 0.18);
+  --steel-light: #cbd5e1;
+  --steel-dark: #334155;
+  --amber-main: #f59e0b;
+  --amber-dark: #b45309;
+  --amber-glow: rgba(245, 158, 11, 0.28);
+  --shadow-elevated: 0 24px 48px rgba(0, 0, 0, 0.55);
+  --font-en: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-fa: 'Vazirmatn', Tahoma, sans-serif;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --transition-smooth: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Light Day Theme Overrides */
 [data-theme="light"] {
-    --bg-color: #f8fafc;
-    --card-bg: #ffffff;
-    --text-color: #1e293b;
-    --text-muted: #64748b;
-    --primary: #d97706;
-    --primary-hover: #b45309;
-    --accent: #2563eb;
-    --border-color: rgba(0, 0, 0, 0.1);
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #e2e8f0;
+  --bg-surface: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-color: rgba(15, 23, 42, 0.12);
+  --steel-light: #1e293b;
+  --steel-dark: #cbd5e1;
+  --shadow-elevated: 0 20px 40px rgba(15, 23, 42, 0.1);
 }
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Vazirmatn', 'Plus Jakarta Sans', sans-serif;
-    transition: background-color 0.3s, color 0.3s;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    line-height: 1.6;
-    overflow-x: hidden;
+  font-family: var(--font-en);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.65;
+  overflow-x: hidden;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-/* Navbar */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 5%;
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+html[dir="rtl"] body {
+  font-family: var(--font-fa);
 }
 
-.logo-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
-.brand-icon {
-    font-size: 28px;
-    color: var(--primary);
+/* ==========================================================================
+   3D Tactile Buttons with Depth & Specular Sheen
+   ========================================================================== */
+
+.btn-3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 26px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: #f8fafc;
+  background: linear-gradient(145deg, #273449, #182131);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  box-shadow:
+    0 6px 0 #090d16,
+    0 12px 24px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  transform: translateY(0);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.2s ease;
+  user-select: none;
 }
 
-.brand-name {
-    font-size: 20px;
-    font-weight: 800;
+.btn-3d:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 #090d16,
+    0 16px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-.nav-links {
-    display: flex;
-    gap: 30px;
+.btn-3d:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 #090d16,
+    0 4px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.nav-links a {
-    text-decoration: none;
-    color: var(--text-color);
-    font-weight: 600;
+.btn-3d-amber {
+  color: #0b0f19;
+  background: linear-gradient(145deg, #fbbf24, #d97706);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 6px 0 #92400e,
+    0 12px 26px var(--amber-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-.nav-links a:hover {
-    color: var(--primary);
+.btn-3d-amber:hover {
+  box-shadow:
+    0 8px 0 #92400e,
+    0 16px 32px rgba(245, 158, 11, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-.nav-controls {
-    display: flex;
-    gap: 12px;
+.btn-3d-amber:active {
+  box-shadow:
+    0 2px 0 #92400e,
+    0 4px 10px rgba(245, 158, 11, 0.25);
 }
 
-.control-btn {
-    background: var(--border-color);
-    border: none;
-    color: var(--text-color);
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 700;
+.btn-3d-sm {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  box-shadow:
+    0 4px 0 #090d16,
+    0 8px 16px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.control-btn:hover {
-    background: var(--primary);
-    color: #fff;
+.btn-3d-xs {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  border-radius: 8px;
+  box-shadow: 0 3px 0 #090d16;
 }
 
-/* Hero Section */
+.btn-3d-xs.active {
+  background: linear-gradient(145deg, #f59e0b, #b45309);
+  color: #0b0f19;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* ==========================================================================
+   Initial Language Splash Modal
+   ========================================================================== */
+
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(7, 10, 18, 0.88);
+  backdrop-filter: blur(18px);
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.splash-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 40px 32px;
+  text-align: center;
+  background: linear-gradient(160deg, #182234, #0d1320);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.75);
+}
+
+.splash-logo-wrap {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--amber-main);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.splash-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.splash-brand {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #f8fafc;
+}
+
+.splash-sub {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--amber-main);
+  margin-bottom: 22px;
+}
+
+.splash-prompt {
+  font-size: 0.92rem;
+  color: #cbd5e1;
+  margin-bottom: 26px;
+}
+
+.splash-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ==========================================================================
+   Sticky Header Navigation
+   ========================================================================== */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--bg-glass);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+  gap: 16px;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.nav-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--amber-main);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
+.brand-caption {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.main-nav a {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.main-nav a:hover {
+  color: var(--amber-main);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   Hero Section (Bandar Kangan & Bushehr Coastal Theme)
+   ========================================================================== */
+
 .hero-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: 85vh;
-    align-items: center;
-    padding: 0 5%;
-    gap: 40px;
+  position: relative;
+  min-height: 88vh;
+  display: flex;
+  align-items: center;
+  padding: 80px 0 60px;
+  overflow: hidden;
+}
+
+.hero-bg-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  animation: kenBurnsCoast 24s ease-in-out infinite alternate;
+}
+
+@keyframes kenBurnsCoast {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.08) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(11, 15, 25, 0.92) 0%,
+    rgba(11, 15, 25, 0.74) 55%,
+    rgba(11, 15, 25, 0.35) 100%
+  );
+}
+
+html[dir="rtl"] .hero-overlay {
+  background: linear-gradient(
+    270deg,
+    rgba(11, 15, 25, 0.92) 0%,
+    rgba(11, 15, 25, 0.74) 55%,
+    rgba(11, 15, 25, 0.35) 100%
+  );
 }
 
 .hero-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
 }
 
-.badge {
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--primary);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    width: fit-content;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  margin-bottom: 22px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fbbf24;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 999px;
 }
 
-.hero-content h1 {
-    font-size: 42px;
-    font-weight: 800;
-    line-height: 1.3;
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 12px #f59e0b;
+  animation: pulseGlow 1.8s infinite;
 }
 
-.hero-content p {
-    color: var(--text-muted);
-    font-size: 16px;
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(1.35); }
 }
 
-.cta-buttons {
-    display: flex;
-    gap: 15px;
-    margin-top: 15px;
+.hero-title {
+  font-size: clamp(2rem, 4.2vw, 3.35rem);
+  font-weight: 800;
+  line-height: 1.18;
+  color: #f8fafc;
+  margin-bottom: 20px;
 }
 
-.btn {
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-weight: 700;
-    text-decoration: none;
-    text-align: center;
+.hero-desc {
+  font-size: 1.06rem;
+  color: #cbd5e1;
+  margin-bottom: 32px;
+  max-width: 600px;
 }
 
-.btn.primary {
-    background: var(--primary);
-    color: #fff;
+.hero-cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 44px;
 }
 
-.btn.primary:hover {
-    background: var(--primary-hover);
+.telemetry-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 18px 22px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
 }
 
-.btn.secondary {
-    background: var(--border-color);
-    color: var(--text-color);
+.telemetry-item {
+  display: flex;
+  flex-direction: column;
 }
 
-/* 3D Canvas Styling */
-.canvas-container {
-    width: 100%;
-    height: 480px;
-    background: radial-gradient(circle, rgba(30,41,59,0.5) 0%, rgba(11,15,25,1) 100%);
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    position: relative;
-    overflow: hidden;
+.telemetry-label {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-#webgl-container {
-    width: 100%;
-    height: 100%;
+.telemetry-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
 }
 
-.canvas-controls-overlay {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
+/* ==========================================================================
+   3D Fleet Inspection Section (truck.glb + Studio Photo)
+   ========================================================================== */
 
-.glow-btn {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 30px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
-}
-
-.glow-btn:hover {
-    background: var(--primary-hover);
-}
-
-.hint-text {
-    font-size: 12px;
-    color: var(--text-muted);
-}
-
-/* Sections General */
-section {
-    padding: 80px 5%;
+.section-block {
+  padding: 90px 0;
 }
 
 .section-header {
-    text-align: center;
-    margin-bottom: 50px;
+  max-width: 700px;
+  margin-bottom: 48px;
 }
 
-.section-header h2 {
-    font-size: 32px;
-    margin-bottom: 12px;
+.section-eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--amber-main);
+  margin-bottom: 10px;
 }
 
-.section-header p {
-    color: var(--text-muted);
+.section-title {
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
+  font-weight: 800;
+  line-height: 1.22;
+  margin-bottom: 12px;
 }
 
-/* Cards Grid */
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
 }
 
-.card {
-    background: var(--card-bg);
-    padding: 35px 25px;
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+.showcase-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 28px;
+  align-items: stretch;
 }
 
-.card-icon {
-    font-size: 36px;
-    color: var(--primary);
-    margin-bottom: 20px;
+.model-stage {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-elevated);
 }
 
-.card h3 {
-    margin-bottom: 12px;
-    font-size: 20px;
+.stage-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.card p {
-    color: var(--text-muted);
-    font-size: 14px;
+.stage-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--amber-main);
 }
 
-/* Showroom Grid */
-.truck-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 30px;
+.stage-buttons {
+  display: flex;
+  gap: 8px;
 }
 
-.truck-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
+.glb-canvas {
+  width: 100%;
+  height: 440px;
+  background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%);
+  border-radius: var(--radius-md);
+  outline: none;
 }
 
-.truck-card img {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
+.stage-footer {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
 }
 
-.truck-info {
-    padding: 25px;
+.specs-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.truck-info h3 {
-    font-size: 18px;
-    margin-bottom: 8px;
+.studio-preview-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
 }
 
-.specs {
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-bottom: 20px;
+.studio-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
 }
 
-.btn-sm {
-    display: inline-block;
-    background: var(--border-color);
-    color: var(--text-color);
-    padding: 8px 16px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
+.studio-caption {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
 }
 
-.btn-sm:hover {
-    background: var(--primary);
-    color: #fff;
+.studio-caption strong {
+  font-size: 0.98rem;
 }
 
-/* Contact Section */
-.contact-section {
-    background: var(--card-bg);
-    border-top: 1px solid var(--border-color);
+.studio-caption span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
-.contact-box {
-    max-width: 600px;
-    margin: 0 auto;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.spec-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.contact-box p {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: var(--text-muted);
-    font-size: 16px;
+.spec-item {
+  padding: 18px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
 }
 
-.contact-box i {
-    color: var(--primary);
+.spec-item h3 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+  color: var(--amber-main);
 }
 
-footer {
-    text-align: center;
-    padding: 30px;
-    font-size: 13px;
-    color: var(--text-muted);
-    border-top: 1px solid var(--border-color);
+.spec-item p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
 }
 
-@media (max-width: 900px) {
-    .hero-section {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-    .hero-content {
-        align-items: center;
-    }
-    .cta-buttons {
-        justify-content: center;
-    }
-    .nav-links {
-        display: none;
-    }
+/* ==========================================================================
+   Divisions Section with BG_Link.jpg Banner
+   ========================================================================== */
+
+.divisions-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.divisions-banner-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.divisions-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.24;
+}
+
+.divisions-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--bg-primary) 0%, transparent 50%, var(--bg-primary) 100%);
+}
+
+.relative-z {
+  position: relative;
+  z-index: 2;
+}
+
+.divisions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+.division-card {
+  padding: 28px 24px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+}
+
+.div-index {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--amber-main);
+  margin-bottom: 14px;
+}
+
+.division-card h3 {
+  font-size: 1.08rem;
+  margin-bottom: 10px;
+}
+
+.division-card p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Freight Quote Calculator
+   ========================================================================== */
+
+.quote-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 36px;
+  padding: 42px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+}
+
+.quote-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-control {
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: var(--amber-main);
+}
+
+.quote-result-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 12px;
+}
+
+.result-label {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.result-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--amber-main);
+}
+
+.form-feedback {
+  font-size: 0.88rem;
+  color: #10b981;
+  min-height: 22px;
+}
+
+/* ==========================================================================
+   Corporate Footer
+   ========================================================================== */
+
+.site-footer {
+  padding: 56px 0 28px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 36px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 440px;
+}
+
+.footer-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--amber-main);
+}
+
+.footer-hub h4 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.footer-hub p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+
+.footer-bottom {
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ==========================================================================
+   Interactive 3D Card Tilt & Responsive Rules
+   ========================================================================== */
+
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+@media (max-width: 1024px) {
+  .showcase-grid,
+  .quote-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .divisions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .main-nav {
+    display: none;
+  }
+
+  .telemetry-strip,
+  .divisions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .glb-canvas {
+    height: 320px;
+  }
 }
